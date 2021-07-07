@@ -4,6 +4,40 @@
 
 #include <iostream>
 
+// массив vertex
+GLfloat point[] = {
+     0.0f, 0.5f, 0.0f,
+     0.5f,-0.5f, 0.0f,
+    -0.5f,-0.5f, 0.0f
+};
+
+// массив цвета
+GLfloat colors[] = {
+    1.0f, 0.0f, 0.0f,
+    0.0f, 1.0f, 0.0f,
+    0.0f, 0.0f, 1.0f
+};
+
+// шейдер для vertex
+const char* vertex_shader =
+"#version 460\n" // макрос, в котором указывается версия шейдера
+"layout(location = 0) in vec3 vertex_position;" // входные данные для vertex
+"layout(location = 1) in vec3 vertex_color;"
+"out vec3 color;"
+"void main() {"
+"   color = vertex_color;"
+"   gl_Position = vec4(vertex_position, 1.0);" // встроенная переменная обозначает позицию vertex (нормированные координаты от -1 до 1)
+"}";
+
+// фрагментный шейдер
+const char* fragment_shader =
+"#version 460\n"
+"in vec3 color;" // входной параметр
+"out vec4 frag_color;" // выходной параметр (цвет), переменную указываем сами
+"void main() {"
+"   frag_color = vec4(color, 1.0);" // 1 - полностью непрозрачный элемент
+"}";
+
 //переменны для изменения размера окна
 int g_windowSizeX = 640;
 int g_windowSizeY = 480;
@@ -11,8 +45,8 @@ int g_windowSizeY = 480;
 // функция для отслеживания изменений размера окна
 void glfwWindowSizeCallback(GLFWwindow* pWindow, int width, int heigth)
 {
-    int g_windowSizeX = width;
-    int g_windowSizeY = heigth;
+    g_windowSizeX = width;
+    g_windowSizeY = heigth;
     glViewport(0, 0, g_windowSizeX, g_windowSizeY); // команда, показывающая OpelGL место, где мы хотим рисовать (передаем координаты нижнего левого угла; ширина; высота)
 
 }
@@ -67,11 +101,66 @@ int main(void)
 
     glClearColor(1, 1, 0, 1);
 
+    //Создаем индефикатор
+    GLuint vs = glCreateShader(GL_VERTEX_SHADER); // функция OpenGL передаем в нее шейдер vertex
+    glShaderSource(vs, 1, &vertex_shader, nullptr); // передается индефикатор шейдера, кол-во строк, ссылкаа на массив строк
+    // компилируем код шейдера
+    glCompileShader(vs);
+
+    //фрагментный шейдер
+    GLuint fs = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(fs, 1, &fragment_shader, nullptr);
+    glCompileShader(fs);
+
+    GLuint shader_program = glCreateProgram();// команда генерации
+    glAttachShader(shader_program, vs);
+    glAttachShader(shader_program, fs);
+    glLinkProgram(shader_program);// перелинковка
+
+    //удаляем шейдеры после выполнения программы
+    glDeleteShader(vs);
+    glDeleteShader(fs);
+
+    //передаем позицию видеокарте
+    GLuint points_vbo = 0;
+    glGenBuffers(1, &points_vbo); // генерирует значение и передает значение по указателю
+    glBindBuffer(GL_ARRAY_BUFFER, points_vbo);
+    // заполняем буфер информацией для видеокарты
+    glBufferData(GL_ARRAY_BUFFER, sizeof(point), point, GL_STATIC_DRAW); // вид буффера, размер буфера в байтах, указатель на буфер, подсказка для драйвера
+
+    // передает информацию для массива цвета
+    GLuint colors_vbo = 0;
+    glGenBuffers(1, &colors_vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, colors_vbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(colors), colors, GL_STATIC_DRAW);
+
+    // обработка данных для видеокарты
+    GLuint vao = 0;
+    glGenVertexArrays(1, &vao);
+    glBindVertexArray(vao);
+
+    // включаем нулевую позицию
+    glEnableVertexAttribArray(0);
+    //включаем текущей буфер
+    glBindBuffer(GL_ARRAY_BUFFER, points_vbo);
+    // связываем данные
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr); // данная команда выполняется только для текущего забиндинованного буфера
+
+    // включаем цвет
+    glEnableVertexAttribArray(1);
+    glBindBuffer(GL_ARRAY_BUFFER, colors_vbo);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(pwindow)) // проверка состояния окна
     {
         /* Render here */
         glClear(GL_COLOR_BUFFER_BIT); // очищаем буфер цвета
+
+        // подключаем шейдеры для рисования
+        glUseProgram(shader_program);
+        glBindVertexArray(vao);
+        glDrawArrays(GL_TRIANGLES, 0, 3); // команда отрисовки
 
         /* Swap front and back buffers */
         glfwSwapBuffers(pwindow); // буфер (задний и передний) меняем местами
