@@ -4,6 +4,8 @@
 
 #include <iostream>
 
+#include "Renderer/ShaderProgram.h"
+
 // массив vertex
 GLfloat point[] = {
      0.0f, 0.5f, 0.0f,
@@ -101,25 +103,14 @@ int main(void)
 
     glClearColor(1, 1, 0, 1);
 
-    //Создаем индефикатор
-    GLuint vs = glCreateShader(GL_VERTEX_SHADER); // функция OpenGL передаем в нее шейдер vertex
-    glShaderSource(vs, 1, &vertex_shader, nullptr); // передается индефикатор шейдера, кол-во строк, ссылкаа на массив строк
-    // компилируем код шейдера
-    glCompileShader(vs);
-
-    //фрагментный шейдер
-    GLuint fs = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fs, 1, &fragment_shader, nullptr);
-    glCompileShader(fs);
-
-    GLuint shader_program = glCreateProgram();// команда генерации
-    glAttachShader(shader_program, vs);
-    glAttachShader(shader_program, fs);
-    glLinkProgram(shader_program);// перелинковка
-
-    //удаляем шейдеры после выполнения программы
-    glDeleteShader(vs);
-    glDeleteShader(fs);
+    std::string vertexShader(vertex_shader);
+    std::string fragmentShader(fragment_shader);
+    Renderer::ShaderProgram shaderProgram(vertexShader, fragmentShader);
+    if (!shaderProgram.idCompiled())
+    {
+        std::cerr << "Can't create shader program!" << std::endl;
+        return -1;
+    }
 
     //передаем позицию видеокарте
     GLuint points_vbo = 0;
@@ -158,7 +149,7 @@ int main(void)
         glClear(GL_COLOR_BUFFER_BIT); // очищаем буфер цвета
 
         // подключаем шейдеры для рисования
-        glUseProgram(shader_program);
+        shaderProgram.use();
         glBindVertexArray(vao);
         glDrawArrays(GL_TRIANGLES, 0, 3); // команда отрисовки
 
