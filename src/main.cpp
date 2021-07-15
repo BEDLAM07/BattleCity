@@ -5,6 +5,7 @@
 #include <iostream>
 
 #include "Renderer/ShaderProgram.h"
+#include "Resources/ResourceManager.h"
 
 // массив vertex
 GLfloat point[] = {
@@ -19,26 +20,6 @@ GLfloat colors[] = {
     0.0f, 1.0f, 0.0f,
     0.0f, 0.0f, 1.0f
 };
-
-// шейдер для vertex
-const char* vertex_shader =
-"#version 460\n" // макрос, в котором указывается версия шейдера
-"layout(location = 0) in vec3 vertex_position;" // входные данные для vertex
-"layout(location = 1) in vec3 vertex_color;"
-"out vec3 color;"
-"void main() {"
-"   color = vertex_color;"
-"   gl_Position = vec4(vertex_position, 1.0);" // встроенная переменная обозначает позицию vertex (нормированные координаты от -1 до 1)
-"}";
-
-// фрагментный шейдер
-const char* fragment_shader =
-"#version 460\n"
-"in vec3 color;" // входной параметр
-"out vec4 frag_color;" // выходной параметр (цвет), переменную указываем сами
-"void main() {"
-"   frag_color = vec4(color, 1.0);" // 1 - полностью непрозрачный элемент
-"}";
 
 //переменны для изменения размера окна
 int g_windowSizeX = 640;
@@ -62,8 +43,11 @@ void glfwKeyCallback(GLFWwindow* pWindow, int key, int scancode, int action, int
         glfwSetWindowShouldClose(pWindow, GL_TRUE); // закрываем окно
     }
 }
-int main(void)
+int main(int argc, char** argv)
 {
+    ResourceManager resourceManager(argv[0]);
+
+
     /* Initialize the library */
     if (!glfwInit())
     {
@@ -103,8 +87,8 @@ int main(void)
 
     glClearColor(1, 1, 0, 1);
 
-    std::string vertexShader(vertex_shader);
-    std::string fragmentShader(fragment_shader);
+    std::string vertexShader;// (vertex_shader);
+    std::string fragmentShader;// (fragment_shader);
     Renderer::ShaderProgram shaderProgram(vertexShader, fragmentShader);
     if (!shaderProgram.idCompiled())
     {
