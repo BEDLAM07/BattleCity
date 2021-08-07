@@ -8,7 +8,7 @@ namespace Renderer {
 	public:
 		ShaderProgram(const std::string& vertexShader, const std::string& fragmentShader); // создаем конструктур
 		~ShaderProgram(); // деструктор
-		bool idCompiled() const { return m_isCompiled; } // функция возвращающая флаг
+		bool idCompiled() const { return m_isCompiled; }// функция возвращающая флаг
 		void use() const; // функция включающая шейдеры
 
 		ShaderProgram() = delete;

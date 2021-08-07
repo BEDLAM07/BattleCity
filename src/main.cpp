@@ -45,9 +45,6 @@ void glfwKeyCallback(GLFWwindow* pWindow, int key, int scancode, int action, int
 }
 int main(int argc, char** argv)
 {
-    ResourceManager resourceManager(argv[0]);
-
-
     /* Initialize the library */
     if (!glfwInit())
     {
@@ -87,63 +84,65 @@ int main(int argc, char** argv)
 
     glClearColor(1, 1, 0, 1);
 
-    std::string vertexShader;// (vertex_shader);
-    std::string fragmentShader;// (fragment_shader);
-    Renderer::ShaderProgram shaderProgram(vertexShader, fragmentShader);
-    if (!shaderProgram.idCompiled())
     {
-        std::cerr << "Can't create shader program!" << std::endl;
-        return -1;
-    }
+        ResourceManager resourceManager(argv[0]);
 
-    //передаем позицию видеокарте
-    GLuint points_vbo = 0;
-    glGenBuffers(1, &points_vbo); // генерирует значение и передает значение по указателю
-    glBindBuffer(GL_ARRAY_BUFFER, points_vbo);
-    // заполняем буфер информацией для видеокарты
-    glBufferData(GL_ARRAY_BUFFER, sizeof(point), point, GL_STATIC_DRAW); // вид буффера, размер буфера в байтах, указатель на буфер, подсказка для драйвера
+        // загружаем шейдеры
+        auto pDefaultShaderProgram = resourceManager.loadShaders("DefaultShader", "res/shaders/vertex.txt", "res/shaders/fragment.txt");
+        if (!pDefaultShaderProgram)
+        {
+            std::cerr << "Can't create shader program: " << "DefaultShader" << std::endl;
+            return -1;
+        }
 
-    // передает информацию для массива цвета
-    GLuint colors_vbo = 0;
-    glGenBuffers(1, &colors_vbo);
-    glBindBuffer(GL_ARRAY_BUFFER, colors_vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(colors), colors, GL_STATIC_DRAW);
+        //передаем позицию видеокарте
+        GLuint points_vbo = 0;
+        glGenBuffers(1, &points_vbo); // генерирует значение и передает значение по указателю
+        glBindBuffer(GL_ARRAY_BUFFER, points_vbo);
+        // заполняем буфер информацией для видеокарты
+        glBufferData(GL_ARRAY_BUFFER, sizeof(point), point, GL_STATIC_DRAW); // вид буффера, размер буфера в байтах, указатель на буфер, подсказка для драйвера
 
-    // обработка данных для видеокарты
-    GLuint vao = 0;
-    glGenVertexArrays(1, &vao);
-    glBindVertexArray(vao);
+        // передает информацию для массива цвета
+        GLuint colors_vbo = 0;
+        glGenBuffers(1, &colors_vbo);
+        glBindBuffer(GL_ARRAY_BUFFER, colors_vbo);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(colors), colors, GL_STATIC_DRAW);
 
-    // включаем нулевую позицию
-    glEnableVertexAttribArray(0);
-    //включаем текущей буфер
-    glBindBuffer(GL_ARRAY_BUFFER, points_vbo);
-    // связываем данные
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr); // данная команда выполняется только для текущего забиндинованного буфера
-
-    // включаем цвет
-    glEnableVertexAttribArray(1);
-    glBindBuffer(GL_ARRAY_BUFFER, colors_vbo);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
-
-    /* Loop until the user closes the window */
-    while (!glfwWindowShouldClose(pwindow)) // проверка состояния окна
-    {
-        /* Render here */
-        glClear(GL_COLOR_BUFFER_BIT); // очищаем буфер цвета
-
-        // подключаем шейдеры для рисования
-        shaderProgram.use();
+        // обработка данных для видеокарты
+        GLuint vao = 0;
+        glGenVertexArrays(1, &vao);
         glBindVertexArray(vao);
-        glDrawArrays(GL_TRIANGLES, 0, 3); // команда отрисовки
 
-        /* Swap front and back buffers */
-        glfwSwapBuffers(pwindow); // буфер (задний и передний) меняем местами
+        // включаем нулевую позицию
+        glEnableVertexAttribArray(0);
+        //включаем текущей буфер
+        glBindBuffer(GL_ARRAY_BUFFER, points_vbo);
+        // связываем данные
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr); // данная команда выполняется только для текущего забиндинованного буфера
 
-        /* Poll for and process events */
-        glfwPollEvents(); // обрабатываем ивенты которые поступют "извне" (нажатия клавиш, окна)
+        // включаем цвет
+        glEnableVertexAttribArray(1);
+        glBindBuffer(GL_ARRAY_BUFFER, colors_vbo);
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+
+        /* Loop until the user closes the window */
+        while (!glfwWindowShouldClose(pwindow)) // проверка состояния окна
+        {
+            /* Render here */
+            glClear(GL_COLOR_BUFFER_BIT); // очищаем буфер цвета
+
+            // подключаем шейдеры для рисования
+            pDefaultShaderProgram->use();
+            glBindVertexArray(vao);
+            glDrawArrays(GL_TRIANGLES, 0, 3); // команда отрисовки
+
+            /* Swap front and back buffers */
+            glfwSwapBuffers(pwindow); // буфер (задний и передний) меняем местами
+
+            /* Poll for and process events */
+            glfwPollEvents(); // обрабатываем ивенты которые поступют "извне" (нажатия клавиш, окна)
+        }
     }
-
     glfwTerminate();
     return 0;
 }
