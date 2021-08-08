@@ -1,4 +1,5 @@
 #pragma.once
+
 #include <string>
 #include <memory>
 #include<map>
@@ -19,8 +20,12 @@ public:
 
 	// функция для загрузки шейдеров
 	std::shared_ptr<Renderer::ShaderProgram> loadShaders(const std::string& shaderName, const std::string& vertexPath, const std::string& fragmentPath);
+
 	// функция получения шейдера
 	std::shared_ptr<Renderer::ShaderProgram> getShaderProgram(const std::string& shaderName);
+
+	//функция для загрузки текстур
+	void loadTexture(const std::string& textureName, const std::string& texturePath);
 
 private:
 	

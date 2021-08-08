@@ -88,12 +88,14 @@ int main(int argc, char** argv)
         ResourceManager resourceManager(argv[0]);
 
         // загружаем шейдеры
-        auto pDefaultShaderProgram = resourceManager.loadShaders("DefaultShader", "res/shaders/vertex.txt", "res/shaders/fragment.txt");
+        auto pDefaultShaderProgram = resourceManager.loadShaders("DefaultShader", "res/shaders/vSprite.txt", "res/shaders/fSprite.txt");
         if (!pDefaultShaderProgram)
         {
             std::cerr << "Can't create shader program: " << "DefaultShader" << std::endl;
             return -1;
         }
+
+        resourceManager.loadTexture("DefaultTexture", "res/textures/map_16x16.png");
 
         //передаем позицию видеокарте
         GLuint points_vbo = 0;
