@@ -20,7 +20,7 @@ namespace Renderer {
 
 	private:
 		bool createShader(const std::string& sourse, const GLenum shaderType, GLuint& shaiderID);
-		bool m_isCompiled = false; // флаг, который показывает норнально ли скомпилировались шейдеры
+		bool m_isCompiled = false; // флаг, который показывает нормально ли скомпилировались шейдеры
 		GLuint m_ID = 0;
 	};
 }

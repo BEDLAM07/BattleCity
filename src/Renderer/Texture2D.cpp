@@ -3,9 +3,9 @@
 namespace Renderer {
 	Texture2D::Texture2D (const GLuint width, GLuint height,
 		const unsigned char* data,
-		const unsigned int channels = 4,
-		const GLenum filter = GL_LINEAR,
-		const GLenum wrapMode = GL_CLAMP_TO_EDGE)
+		const unsigned int channels,
+		const GLenum filter,
+		const GLenum wrapMode)
 		: m_width(width)
 		, m_height(height)
 	{
@@ -30,6 +30,38 @@ namespace Renderer {
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapMode);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filter);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter);
+		glGenerateMipmap(GL_TEXTURE_2D);
 
+		glBindTexture(GL_TEXTURE_2D, 0);
 	}
+	Texture2D& Texture2D::operator=(Texture2D&& texture2d)
+	{
+		glDeleteTextures(1, &m_ID);
+		m_ID = texture2d.m_ID;
+		texture2d.m_ID = 0;
+		m_mode = texture2d.m_mode;
+		m_width = texture2d.m_width;
+		m_height = texture2d.m_height;
+		return *this;
+	}
+
+	Texture2D::Texture2D(Texture2D&& texture2d)
+	{
+		m_ID = texture2d.m_ID;
+		texture2d.m_ID = 0;
+		m_mode = texture2d.m_mode;
+		m_width = texture2d.m_width;
+		m_height = texture2d.m_height;
+	}
+
+	Texture2D::~Texture2D()
+	{
+		glDeleteTextures(1, &m_ID);
+	}
+
+	void Texture2D::bind() const
+	{
+		glBindTexture(GL_TEXTURE_2D, m_ID);
+	}
+
 }
